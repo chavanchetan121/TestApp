@@ -58,7 +58,9 @@ export default {
       if (viewer) viewer.destroy();
     },
     next() {
-      this.$emit("next");
+      // this.$emit("next");
+      // comment below line and line no 28 in file ./app.vue, Additionaly uncomment above line to use custom next funtionality.
+      this.$viewer.next(true);
     }
   }
 };

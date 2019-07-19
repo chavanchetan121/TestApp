@@ -23,7 +23,9 @@ export default {
   },
   computed: {
     image: function() {
-      return [this.imageArray[this.index]];
+      // return [this.imageArray[this.index]];
+      // comment below line and line no 63 and uncomment in /components/HelloWorld.vue to Use custom next functionality
+      return this.imageArray;
     }
   },
   methods: {
