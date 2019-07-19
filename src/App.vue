@@ -1,10 +1,6 @@
 <template>
   <div id="app">
-    <section>
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld :open="isOpen" @open="open"/>
-    <button @click="openDialog()" type="=button">Open Dialog</button>
-    </section>
+    <HelloWorld :images="image" @next="nextImage" />
   </div>
 </template>
 
@@ -12,21 +8,27 @@
 import HelloWorld from "./components/HelloWorld.vue";
 
 export default {
-  name: "app",
+  name: "App",
   components: {
     HelloWorld
   },
   data() {
     return {
-      isOpen: false
+      imageArray: [
+        "https://picsum.photos/id/334/250/200",
+        "https://picsum.photos/id/225/250/200"
+      ],
+      index: 0
+    };
+  },
+  computed: {
+    image: function() {
+      return [this.imageArray[this.index]];
     }
   },
   methods: {
-    openDialog() {
-      this.isOpen = true;
-    },
-    open(bFlag) {
-      this.isOpen = bFlag;
+    nextImage() {
+      this.index = this.index === 1 ? 0 : 1;
     }
   }
 };
@@ -39,6 +41,6 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 0px;
 }
 </style>

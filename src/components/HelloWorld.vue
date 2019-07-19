@@ -1,233 +1,156 @@
 <template>
-  <div v-if="isOpen" class="dialog modal is-active">
-    <div class="modal-background" @click="backgroundToggle"></div>
-    <div class="modal-card">
-      <div>
-        <header class="modal-card-head">
-          <p class="modal-card-title" align="left">
-            {{ labels.dlgLabel.title }}
-          </p>
-          <button
-            class="delete"
-            aria-label="close"
-            @click="$emit('open', false)"
-          />
-        </header>
-        <section class="modal-card-body">
-          <label class="label" align="left"
-            >{{ labels.dlgLabel.name
-            }}<span class="star-location">*</span></label
-          >
-          <p class="control">
-            <input
-              ref="input-name"
-              class="input"
-              autocomplete="off"
-              :class="{ 'is-danger': errors.has('name') }"
-              name="name"
-              type="text"
-              :placeholder="labels.placeholder.name"
-              v-validate="{ required: true, regex: charValidation(), max: 32 }"
-              v-model="component.name"
-              v-focus
-            />
-          </p>
-          <p class="help is-danger">
-            <span>{{ errors.first("name") }}</span>
-          </p>
-
-          <!-- Project description field -->
-          <b-field :label="labels.dlgLabel.description" align="left">
-            <b-input
-              type="textarea"
-              name="prtDescription"
-              v-model="component.description"
-              maxlength="256"
-              :placeholder="labels.placeholder.description"
-            />
-          </b-field>
-          <!-- Number field -->
-          <label class="label" align="left">{{
-            labels.dlgLabel.contactNumber
-          }}</label>
-          <!-- Number input -->
-          <b-field>
-            <b-input
-              type="text"
-              name="number"
-              v-model="component.number"
-              expanded
-              :placeholder="labels.placeholder.contactNumber"
-              v-validate="'numeric'"
-            />
-          </b-field>
-          <p class="help is-danger">
-            <span>{{ errors.first("number") }}</span>
-          </p>
-          <label class="label" align="left">{{
-            labels.dlgLabel.comments
-          }}</label>
-          <p class="control">
-            <!-- Use RegEx for validating comments string, set max length to 5 as DDM service demands -->
-            <input
-              class="input"
-              autocomplete="off"
-              :class="{ 'is-danger': errors.has('revision') }"
-              name="comments"
-              type="text"
-              :placeholder="labels.placeholder.comments"
-              v-validate="{ required: false, regex: charValidation() }"
-              v-model="component.comments"
-            />
-          </p>
-          <p class="help is-danger">
-            <span>{{ errors.first("comments") }}</span>
-          </p>
-        </section>
-        <footer class="modal-card-foot btm-pad16 rigth-pad16">
-          <button class="button" type="button" @click="$emit('open', false)">
-            {{ labels.dlgLabel.closeButton }}
-          </button>
-          <button
-            class="button is-primary"
-            type="button"
-            :disabled="disableSaveCreation"
-            @click="acceptDialog()"
-          >
-            {{ labels.dlgLabel.actionButton }}
-          </button>
-        </footer>
-      </div>
-    </div>
+  <div class="image-viewer" @contextmenu.prevent>
+    <div class="title-viewer">{{ title }}</div>
+    <viewer
+      :options="options"
+      :images="images"
+      @inited="inited"
+      class="viewer"
+      ref="viewer"
+      style="display:none"
+    >
+      <template v-for="image in images">
+        <img :src="image" :key="image" />
+      </template>
+    </viewer>
+    <a title="next" class="button is-large toolbar-tool control" @click="next">
+      <img class="nextButton" :src="require('../Next.svg')" />
+    </a>
   </div>
 </template>
+
 <script>
-let closeOnEscape;
-import Icon from "vue-awesome/components/Icon";
-import "vue-awesome/icons/hashtag";
-import "vue-awesome/icons/cube";
+import Viewer from "v-viewer/src/component.vue";
 
 export default {
-  name: "SaveAsCreateNewDialog",
+  name: "HelloWorld",
   components: {
-    Icon
+    Viewer
   },
-  props: {
-    open: {
-      type: Boolean,
-      required: true
-    },
-    backgroundClick: {
-      type: Boolean,
-      default: false
-    },
-    labels: {
-      type: Object,
-      default: () => {
-        return {
-          placeholder: {
-            name: "Part Name",
-            description: "Geogrophical Description",
-            contactNumber: "Enter contact number",
-            comments: "Comments"
-          },
-          dlgLabel: {
-            title: "Hello World!",
-            name: "Place",
-            description: "Geogrophical Description",
-            contactNumber: "Contact Number",
-            comments: "Comments",
-            closeButton: "Close",
-            actionButton: "Submit"
-          }
-        };
-      }
-    }
-  },
+  props: ["images"],
   data() {
     return {
-      assignProjectNumber: 0,
-      component: {
-        name: "",
-        description: "",
-        number: "",
-        comments: "A"
+      currentFolderId: null,
+      options: {
+        navbar: false,
+        scalable: false,
+        title: false,
+        backdrop: false,
+        fullscreen: true,
+        keyboard: false,
+        transition: true,
+        toolbar: false,
+        inline: true,
+        button: false
       },
-      activeTab: 0
+      title: "Test.png"
     };
   },
-  created() {
-    /* istanbul ignore else */
-    if (typeof window !== "undefined") {
-      /* istanbul ignore next */
-      document.addEventListener(
-        "keyup",
-        (closeOnEscape = event => {
-          /* istanbul ignore next */
-          if (event.keyCode === 27) this.$emit("open", false);
-        })
-      );
-    }
-  },
   beforeDestroy() {
-    document.removeEventListener("keyup", closeOnEscape);
-  },
-  computed: {
-    disableSaveCreation() {
-      return this.errors.count() > 0;
-    },
-    isOpen() {
-      return this.open;
-    }
-  },
-  directives: {
-    focus: {
-      inserted(el) {
-        el.focus();
-      }
-    }
+    this.destroyviewer(this.$viewer);
   },
   methods: {
-    backgroundToggle() {
-      if (this.backgroundClick) {
-        this.$emit("open", false);
-      }
+    inited(viewer) {
+      this.$viewer = viewer;
+      this.$viewer.show();
     },
-
-    charValidation() {
-      return "^[a-zA-Z][a-zA-Z0-9 _\\.-]*$";
+    destroyviewer(viewer) {
+      if (viewer) viewer.destroy();
     },
-
-    acceptDialog() {
-        this.$emit("accept", this.component);
-    },
+    next() {
+      this.$emit("next");
+    }
   }
 };
 </script>
-<style lang="scss" scoped>
-.modal .modal-card {
+<style lang="scss">
+@import "~bulma/sass/utilities/_all";
+@import "~bulma/sass/base/helpers";
+.image-viewer {
+  background-color: $grey-lighter;
+  height: calc(100%);
   width: 100%;
-}
-/*
-  Ensure there is room for the help text to prevent
-  the field size from changeing when an validation
-  error is reported.
- */
-
-.help.is-danger {
-  min-height: 1.5em;
+  position: absolute;
 }
 
-.icon-color-secondary {
-  color: purple;
+.viewer-container {
+  z-index: 0;
 }
-.modal-card-head {
-  background-color: purple;
+
+.viewer-canvas {
+  background-color: $grey-lighter;
+  margin-bottom: 56px;
 }
-.star-location {
-  color:red;
+
+.imageViewer-close {
+  right: 0em;
+  height: 2.5em;
+  width: 2.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  z-index: 1;
+  padding-bottom: 0.1em;
+  opacity: 0.8;
+  background: $background;
+  cursor: pointer;
 }
-.modal-card-title {
-  color: white;
+
+.close-viewer-icon {
+  color: $black;
+}
+.close-viewer-icon:hover {
+  color: $black;
+}
+
+.title-viewer {
+  color: $black;
+  display: flex;
+  width: 100%;
+  background-color: $background;
+  position: absolute;
+  line-height: 3.2;
+  max-width: 100%;
+  text-align: left;
+  padding-left: 1.3em;
+  z-index: 1;
+  margin: 0;
+  left: 0;
+  opacity: 0.8;
+  font-size: 0.81em;
+}
+
+.title-viewer:hover {
+  color: $black;
+  display: flex;
+  position: absolute;
+  width: 100%;
+  background-color: $background;
+  line-height: 3.2;
+  max-width: 100%;
+  text-align: left;
+  padding-left: 1.3em;
+  z-index: 1;
+  margin: 0;
+  left: 0;
+  opacity: 0.8;
+  font-size: 0.81em;
+}
+
+.nextButton {
+  z-index: 1;
+  width: 40px;
+}
+
+.button.is-large {
+  bottom: 0;
+  position: absolute;
+}
+
+.image-toolbar .toolbar-tools .field .is-large {
+  @include mobile {
+    font-size: 18px;
+  }
 }
 </style>
